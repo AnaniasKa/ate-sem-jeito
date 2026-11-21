@@ -3,6 +3,3 @@ backup/
 .claude/
 assets/fonte-capa/
 assets/capa.JPEG
-
-# Música de terceiros: não pode ser redistribuída num repositório público
-assets/Sozin.m4a
