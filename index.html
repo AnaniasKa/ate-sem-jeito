@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#165e68">
+<title>Até sem jeito</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main id="app" class="closed">
+  <div class="stage" id="stage" aria-live="off">
+    <div class="board"></div>
+    <div class="block block-r"></div>
+    <div class="block block-l"></div>
+    <div class="cast"></div>
+  </div>
+  <nav aria-label="Folhear o caderno">
+    <button type="button" id="prev">‹ Voltar</button>
+    <div class="mid">
+      <span id="where"></span>
+      <div id="player" hidden>
+        <button type="button" id="pp" aria-label="Tocar a música"><span class="ico"></span></button>
+        <div class="meta"><b id="mt"></b><small id="ma"></small></div>
+        <span class="bar"><i></i></span>
+      </div>
+    </div>
+    <button type="button" id="next">Abrir ›</button>
+  </nav>
+</main>
+
+<div id="scpanel" aria-label="Player oficial do SoundCloud">
+  <p>Toque no play aqui embaixo pra música começar <button type="button" id="scclose" aria-label="Fechar">✕</button></p>
+</div>
+
+<!-- As páginas ficam aqui em ordem de leitura; o script monta as folhas (1 por vez no celular, 2 no PC). -->
+<div id="pages" hidden>
+
+  <!-- CAPA -->
+  <!-- A arte bordada (assets/capa-bordada.jpg) já traz o título e a dedicatória;
+       o h1 fica só para leitores de tela, sem repetir o texto na tela. -->
+  <section class="page cover-front embroidered" aria-labelledby="capa-titulo">
+    <h1 id="capa-titulo" class="sr-only">Até sem jeito. Pra Bell, de Kaique</h1>
+    <button type="button" class="cover-open" aria-label="Abrir o caderno Até sem jeito">
+      <span class="sr-only">Capa bordada: a Bell de cabelo roxo e azul, fazendo um coração com as mãos.</span>
+      <span class="hint" aria-hidden="true">toque para abrir</span>
+    </button>
+  </section>
+  <section class="page endpaper" aria-hidden="true">
+    <div class="inner"><span class="exlibris">Até sem jeito</span></div>
+  </section>
+
+  <!-- 1 · O CARRO -->
+  <section class="page paper">
+    <div class="inner">
+      <div class="top">
+        <figure class="photo" style="--ar:.5625;--tilt:-3.5deg"><img src="assets/0D1E1247-550B-4D2A-98DF-629D766FB8BE.JPEG" alt="Os dois fazendo careta, com as mãos dela formando um coração" draggable="false"></figure>
+        <h2>O carro</h2>
+      </div>
+      <p class="verses">
+        <span class="v">Vida, lembra daquele carro? A gente não parava.</span>
+        <span class="v">Faltava coragem pro beijo, mas assunto não faltava.</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="page paper">
+    <div class="inner airy">
+      <p class="verses">
+        <span class="v">E eu, querendo ouvir sua risada de qualquer jeito,</span>
+        <span class="v">quiquei no banco. Você riu… mas riu meio sem jeito.</span>
+        <span class="v">Achou estranho. Eu entendo, olha a cena que eu inventei.</span>
+      </p>
+      <figure class="photo mid" style="--ar:.5625;--tilt:3deg"><img src="assets/4629fed2-50a4-4956-b944-d79659a3a71e.JPEG" alt="Os dois no espelho, de máscara facial, fazendo biquinho" draggable="false"></figure>
+    </div>
+  </section>
+
+  <section class="page paper">
+    <div class="inner airy">
+      <figure class="photo mid" style="--ar:.5625;--tilt:-2.5deg"><img src="assets/cef3812c-8429-493c-a738-279df58f8500.JPEG" alt="Selfie dos dois à noite, de rosto colado" draggable="false"></figure>
+      <p class="verses">
+        <span class="v">Horas depois, tomei coragem e te beijei.</span>
+        <span class="v">E o beijo, que eu tanto tinha esperado,</span>
+        <span class="v">foi só um detalhe. Eu já tava apaixonado.</span>
+      </p>
+      <div class="media audio" data-media="audioCarro" data-label="Tem um detalhe que eu preciso explicar…" hidden></div>
+    </div>
+  </section>
+
+  <!-- 2 · O PRIMEIRO "EU TE AMO" -->
+  <section class="page paper intimate">
+    <div class="inner">
+      <h2>Lá em casa</h2>
+      <figure class="photo wide" style="--ar:1.7778;--tilt:2deg"><div class="rot"><img src="assets/22375CA6-F050-4432-AA59-FF228D1A29C3.JPEG" alt="Os dois deitados, se beijando" draggable="false"></div></figure>
+      <p class="verses">
+        <span class="v">Lá em casa, na minha cama, entre um beijinho e outro seu,</span>
+        <span class="v">olhei pra sua cara e a coragem apareceu.</span>
+        <span class="v">“Eu te amo.” Até que enfim, falei.</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="page paper intimate">
+    <div class="inner breathe">
+      <p class="verses">
+        <span class="v">Três palavrinhas, Vida. E olha o tanto que eu ensaiei.</span>
+      </p>
+      <figure class="photo mid" style="--ar:.75;--tilt:-3deg"><img src="assets/IMG_4617.JPEG" alt="Selfie dos dois debaixo de uma árvore, de rosto colado" draggable="false"></figure>
+      <p class="verses last">
+        <span class="v">Naquele dia, achei tão difícil dizer.</span>
+        <span class="v">Hoje, o difícil é te olhar e não dizer.</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- 3 · CAMPOS DO JORDÃO -->
+  <section class="page paper">
+    <div class="inner">
+      <div class="titled">
+        <h2>Campos do Jordão</h2>
+        <p class="note">Morro do Elefante, na lojinha</p>
+      </div>
+      <figure class="photo wide" style="--ar:1.7778;--tilt:-2deg"><div class="rot"><img src="assets/morroelefante.JPEG" alt="Ela de óculos escuros, sorrindo, tirando uma foto com o celular" draggable="false"></div></figure>
+      <p class="verses">
+        <span class="v">Lá no Morro do Elefante, anel de coco na mão,</span>
+        <span class="v">“olha aqui sua aliança”, eu disse, todo bobão.</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="page paper">
+    <div class="inner">
+      <figure class="photo mid" style="--ar:.5625;--tilt:3deg"><img src="assets/791009CE-A6CA-4229-9D6F-DBAEDCFA1C6B.JPEG" alt="Os dois numa foto no espelho" draggable="false"></figure>
+      <div class="headline">
+        <svg class="doodle ring" viewBox="0 0 90 70" aria-hidden="true"><ellipse cx="45" cy="35" rx="29" ry="22" fill="none" stroke="#6a4430" stroke-width="10"/><path d="M22 27c6-11 22-16 36-11" fill="none" stroke="#a37a5c" stroke-width="2.4" stroke-linecap="round"/><path d="M30 52c9 6 24 6 33-2" fill="none" stroke="#4a2e20" stroke-width="2" stroke-linecap="round" opacity=".6"/></svg>
+      </div>
+      <p class="verses big">
+        <span class="v">Você ouviu a gracinha e tirou sua conclusão:</span>
+        <span class="v">“Esse aí não vai me pedir em namoro, não.”</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- a surpresa: só depois da virada -->
+  <section class="page paper">
+    <div class="inner">
+      <div class="headline">
+        <svg class="doodle fire" viewBox="0 0 80 90" aria-hidden="true"><path d="M40 6c5 14 22 22 22 42 0 14-10 24-22 24S18 62 18 48c0-9 5-14 9-20 1 7 4 10 7 11-2-12 1-24 6-33z" fill="#f2884b"/><path d="M40 36c3 8 11 12 11 21 0 8-5 13-11 13s-11-5-11-13c0-5 3-8 5-11 1 4 2 5 4 6-1-6 0-11 2-16z" fill="#ffd27a"/><path d="M14 80l52-10M14 70l52 10" stroke="#6a4430" stroke-width="6" stroke-linecap="round"/></svg>
+        <h2>Na fogueira</h2>
+      </div>
+      <figure class="photo small" style="--ar:.75;--tilt:2.5deg"><img src="assets/namoropedido.JPEG" alt="A mão dela segurando a caixinha com as duas alianças" draggable="false"></figure>
+      <p class="verses">
+        <span class="v">Podia ter feito o pedido lá em cima, com a vista inteira.</span>
+        <span class="v">Fui pedir logo tentando acender a fogueira.</span>
+        <span class="v">E você sem entender se era sério ou brincadeira.</span>
+        <span class="v" id="verso-longo">Vida, sério era o pedido. A escolha do lugar foi a minha cara, de primeira.</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- 4 · AS MANIAS -->
+  <section class="page paper">
+    <div class="inner">
+      <h2>Suas manias</h2>
+      <figure class="photo solo" style="--ar:.75;--tilt:-2.5deg"><img src="assets/IMG_8719.JPEG" alt="Ela sorrindo, sentada sob flores cor-de-rosa" draggable="false"></figure>
+      <p class="verses">
+        <span class="v">Hoje, quando chega o japonês, eu já olho pra você.</span>
+        <span class="v">Gosto de ver sua alegria antes mesmo de comer.</span>
+        <span class="v">E quando não gosta? Nem precisa me contar.</span>
+        <span class="v">Sua cara já contou antes de você falar.</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="page paper">
+    <div class="inner beside">
+      <figure class="photo small" style="--ar:.5625;--tilt:3deg"><img src="assets/0cbea04e-19a5-4031-80aa-0c13eda3d28e.JPEG" alt="Ela numa foto no espelho, de cabelo azul" draggable="false"></figure>
+      <div class="col">
+        <div class="media audio" data-media="audioMovida" data-label="Ouve essa, Vida" hidden></div>
+        <p class="verses">
+          <span class="v">Aí você solta um “movida” com aquele sotaque meu.</span>
+          <span class="v">Era mania minha. Quando foi que virou seu?</span>
+        </p>
+        <p class="verses">
+          <span class="v">No carro eu fiz de tudo pra te arrancar um sorriso.</span>
+          <span class="v">Hoje um “movida” seu já me desmonta de riso.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · ANIVERSÁRIO -->
+  <section class="page paper birthday">
+    <div class="inner">
+      <div class="pair">
+        <figure class="photo" style="--ar:.5625;--tilt:-4deg"><img src="assets/86f3ea1b-d58f-4775-b823-a9834c1f9d16.JPEG" alt="Selfie dos dois na rua: ele sorrindo, ela fazendo biquinho" draggable="false"></figure>
+        <figure class="photo" style="--ar:.75;--tilt:3deg"><img src="assets/IMG_1087.JPEG" alt="Duas mãos brindando com taças" draggable="false"></figure>
+      </div>
+      <p class="verses">
+        <span class="v">Feliz aniversário, meu amor. Ainda quero te fazer rir,</span>
+        <span class="v">mesmo que você ache esquisito o que vem por aí.</span>
+        <span class="v">E se às vezes falta coragem, se a frase sai sem jeito,</span>
+        <span class="v">eu te amo. Pra dizer isso, até sem jeito eu me ajeito.</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="page paper videopage">
+    <div class="inner">
+      <div class="media video" data-media="videoFinal" data-label="Dá o play, Vida" hidden></div>
+      <figure class="photo" style="--ar:.5625;--tilt:-2.5deg"><img src="assets/fa1c0c29-3acd-4e2a-8c41-7e1b12b82ccb.JPEG" alt="Duas fotos instantâneas dos dois, seguradas na mão" draggable="false"></figure>
+    </div>
+  </section>
+
+  <section class="page paper closing">
+    <div class="inner">
+      <div class="collage">
+        <figure class="photo" style="--ar:.5625;--tilt:-3deg"><img src="assets/7339C1E7-B0D9-4DC2-94C3-A051D68CBD84.JPEG" alt="Os dois de óculos escuros, fazendo biquinho" draggable="false"></figure>
+        <figure class="photo" style="--ar:.5625;--tilt:2.5deg"><img src="assets/FEBB193E-F93C-4A71-8383-5887642C911B.JPEG" alt="Os dois no espelho, ela segurando um cachorrinho" draggable="false"></figure>
+        <figure class="photo" style="--ar:.5625;--tilt:2deg"><img src="assets/bd20a912-5099-4688-9e49-d758dedc6944.JPEG" alt="Selfie dos dois num restaurante" draggable="false"></figure>
+        <figure class="photo" style="--ar:.75;--tilt:-2.5deg"><img src="assets/IMG_5776.JPEG" alt="Os dois sentados juntos à noite, diante de um letreiro iluminado" draggable="false"></figure>
+      </div>
+      <p class="signature">Pra Bell, de Kaique</p>
+    </div>
+  </section>
+
+</div>
+
+<script src="config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

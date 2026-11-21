@@ -1,0 +1,418 @@
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+:root{
+  --turn:.86s;
+  --paper:#fffafb; --ink:#253650; --berry:#9a2c57;
+  --cover:linear-gradient(110deg,#a31c49,#7a0f2b 50%,#951a40); /* framboesa da capa bordada */
+  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.68 .34' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23827463' opacity='.16' filter='url(%23n)' d='M0 0h200v200H0z'/%3E%3C/svg%3E");
+  --script:"Segoe Script","Bradley Hand","Noteworthy","Dancing Script",cursive;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html,body{height:100%}
+body{
+  margin:0;min-height:100svh;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 25% 8%,#318684 0%,#165e68 48%,#103f51 100%) fixed #165e68;
+  color:var(--ink);font-family:var(--serif);
+  -webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;
+}
+
+/* ───────── tamanho do livro ───────── */
+#app{
+  /* celular em pé: uma página */
+  --pw:min(94vw,calc((100svh - 92px)*.6));
+  --ph:min(calc(100svh - 92px),calc(var(--pw)*1.92));
+  --sw:var(--pw); --spine:0px;
+  display:flex;flex-direction:column;align-items:center;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+#app.spread{
+  /* monitor horizontal: caderno aberto, ~95% da largura */
+  --pw:min(47.5vw,102.5svh);
+  --ph:clamp(350px,calc(100svh - 125px),62vw);
+  --sw:calc(var(--pw)*2); --spine:var(--pw);
+}
+.stage{
+  position:relative;width:var(--sw);height:var(--ph);
+  perspective:2200px;touch-action:pan-y;user-select:none;-webkit-user-select:none;
+  transition:transform var(--turn) cubic-bezier(.38,.06,.22,1);
+}
+#app:not(.spread) .stage{perspective:1300px}
+#app.spread.closed .stage{transform:translateX(-25%)}
+
+/* contracapa, bloco de folhas e sombra da virada */
+.board{
+  position:absolute;top:0;bottom:0;left:var(--spine);width:var(--pw);z-index:0;
+  background:var(--noise),var(--cover);border-radius:3px 10px 10px 3px;
+  box-shadow:0 4px 0 #7c2044,0 20px 30px -10px rgba(4,34,46,.75);
+}
+.block{
+  position:absolute;top:7px;height:calc(100% - 14px);width:calc(var(--pw) - 17px);
+  background:#f8e1e6;border-radius:2px;
+}
+.block-r{
+  left:var(--spine);z-index:1;
+  box-shadow:1px 1px 0 #d8c7ba,2px 1px 0 #fff8f5,3px 2px 0 #cfbcae,4px 2px 0 #fff8f5,5px 3px 0 #c8b4a6,6px 3px 0 #fff8f5,7px 4px 0 #bfaa9b;
+}
+.block-l{
+  left:calc(var(--spine) - var(--pw) + 17px);z-index:3;display:none;
+  box-shadow:-1px 1px 0 #d8c7ba,-2px 1px 0 #fff8f5,-3px 2px 0 #cfbcae,-4px 2px 0 #fff8f5,-5px 3px 0 #c8b4a6,-6px 3px 0 #fff8f5,-7px 4px 0 #bfaa9b;
+}
+#app.spread.thick-left .block-l{display:block}
+.cast{
+  position:absolute;top:0;bottom:0;left:calc(var(--spine) - var(--pw)*.7);width:calc(var(--pw)*1.4);
+  z-index:90;pointer-events:none;opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(30,14,26,.42) 50%,transparent);
+}
+.stage.turning .cast{animation:cast var(--turn) ease-in-out}
+@keyframes cast{50%{opacity:1}}
+
+/* ───────── folhas ───────── */
+.sheet{
+  position:absolute;top:7px;left:var(--spine);
+  width:calc(var(--pw) - 17px);height:calc(100% - 14px);
+  transform-origin:left center;transform-style:preserve-3d;
+  transition:transform var(--turn) cubic-bezier(.38,.06,.22,1);
+}
+.sheet.cover{top:0;width:var(--pw);height:100%}
+.sheet.turned{transform:rotateY(-180deg)}
+.sheet.moving{will-change:transform}
+.sheet.away{visibility:hidden}
+.face{
+  position:absolute;inset:0;overflow:hidden;border-radius:2px 5px 5px 2px;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+}
+.face.back{transform:rotateY(180deg)}
+.face::after{ /* sombra que acompanha a folha enquanto ela vira */
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:linear-gradient(90deg,rgba(60,30,40,.5),rgba(60,30,40,.08) 55%,rgba(60,30,40,.28));
+}
+.face.back::after{transform:scaleX(-1)}
+.sheet.moving .face::after{animation:shade var(--turn) ease-in-out}
+@keyframes shade{50%{opacity:1}}
+.sheet.cover .face{border-radius:3px 10px 10px 3px;box-shadow:0 4px 0 #7c2044}
+
+/* ───────── página ───────── */
+.page{position:absolute;inset:0;container-type:size;overflow:hidden}
+.inner{
+  --base:5cqw;
+  height:100%;display:flex;flex-direction:column;justify-content:center;gap:1.15em;
+  font-size:calc(var(--base)*var(--fit,1));
+  padding:7cqh 7cqw 6cqh 14cqw;
+}
+#app.spread .inner{--base:max(15.5px,min(2.85cqw,3.4cqh))}
+.inner>*{flex:none;margin:0}
+
+/* ── papel pautado bordado (assets/papel/, gerado por assets/fonte-capa/gerar-papel.py) ──
+   O fundo fica num ::before dentro da própria página, que está dentro da .face que gira:
+   papel, linhas, bordados, fotos e texto viram juntos.
+   border-image em 9 partes: os cantos com os corações não deformam e as faixas do meio
+   (pontos de bordado e linhas) se repetem em número inteiro ("round").
+   --u = 1px da arte original na escala da página. O script calcula --pu para a faixa de linhas
+   caber um número inteiro de vezes na altura (assim as linhas ficam com espaçamento exato)
+   e --P (distância entre linhas), usado como altura de linha dos poemas. */
+.paper{background:#f8e1e6}
+.paper::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  --u:var(--pu,min(calc(100cqw / 765),calc(100cqh / 1024)));
+  border:0 solid transparent;
+  border-image-repeat:round;
+}
+.front>.paper::before{ /* página da direita: lombada à esquerda, corações embaixo à direita */
+  border-image-source:url("assets/papel/papel-dir.jpg");
+  border-image-slice:110 210 233 130 fill;
+  border-image-width:calc(110*var(--u)) calc(210*var(--u)) calc(233*var(--u)) calc(130*var(--u));
+}
+.back>.paper::before{ /* página da esquerda (verso da folha): corações embaixo à esquerda */
+  border-image-source:url("assets/papel/papel-esq.jpg");
+  border-image-slice:110 130 233 210 fill;
+  border-image-width:calc(110*var(--u)) calc(130*var(--u)) calc(233*var(--u)) calc(210*var(--u));
+}
+/* conteúdo dentro das margens: depois da linha vertical, longe da costura e acima dos corações */
+.paper>.inner{
+  --u:var(--pu,min(calc(100cqw / 765),calc(100cqh / 1024)));
+  position:relative;z-index:1;
+  padding:calc(64*var(--u)) calc(86*var(--u)) calc(178*var(--u)) calc(56*var(--u));
+  gap:max(1.15em,var(--P,0px));
+}
+.back>.paper>.inner{padding-left:calc(86*var(--u));padding-right:calc(56*var(--u))}
+/* volume da dobra: sombra suave do lado da lombada, por cima do papel */
+.front>.paper>.inner{background:linear-gradient(90deg,rgba(110,40,60,.24),rgba(110,40,60,.07) 2.6%,transparent 7%)}
+.back>.paper>.inner{background:linear-gradient(270deg,rgba(110,40,60,.24),rgba(110,40,60,.07) 2.6%,transparent 7%)}
+.back .endpaper{box-shadow:inset -26px 0 28px -20px rgba(92,58,48,.6),inset -3px 0 4px -2px rgba(92,58,48,.35)}
+
+h2{
+  font:400 1.7em/1.2 var(--script);color:var(--berry);letter-spacing:-.01em;
+}
+#app.spread h2{font-size:2.1em}
+.verses{font-style:italic;line-height:1.5}
+.v{display:block;padding-left:1.15em;text-indent:-1.15em;text-wrap:balance}
+.v+.v{margin-top:.22em}
+.airy{gap:1.7em}
+.airy .verses{font-size:1.08em}
+.note{font:.82em/1.35 var(--script);color:#5b6b86;margin-top:.5em!important;transform:rotate(-2deg);transform-origin:left}
+
+.top{display:flex;flex-direction:column;align-items:flex-start;gap:.9em}
+.top>*{flex:none;max-width:100%}
+.top>div{flex:1 1 0;min-width:0}
+.top>.photo{order:2;align-self:center}
+#app.spread .top{flex-direction:row;align-items:center;gap:1.6em}
+#app.spread .top>.photo{order:0;align-self:auto}
+#app.spread .top h2{font-size:1.7em}
+.headline{display:flex;align-items:center;gap:.6em}
+
+/* ───────── fotos impressas, presas com alfinete ───────── */
+.photo{
+  --hmax:calc(42cqh*var(--fit,1)); --wmax:calc(52cqw*var(--fit,1));
+  --w:min(var(--wmax),calc(var(--hmax)*var(--ar)));
+  position:relative;box-sizing:content-box;width:var(--w);margin:0;
+  padding:.34em .34em .55em;background:#fffdf7;
+  transform:rotate(var(--tilt,-3deg));
+  box-shadow:0 1px 2px rgba(50,28,34,.3),.15em .45em .8em -.15em rgba(50,28,34,.5);
+}
+.photo::before{ /* alfinete */
+  content:"";position:absolute;z-index:2;left:50%;top:-.42em;width:.85em;height:.85em;margin-left:-.42em;border-radius:50%;
+  background:radial-gradient(circle at 32% 27%,#ffd9c4,#d64672 42%,#6a1f3f 88%);
+  box-shadow:.12em .22em .2em rgba(50,25,30,.5);
+}
+.photo::after{ /* brilho leve de papel fotográfico */
+  content:"";position:absolute;inset:.34em .34em .55em;pointer-events:none;
+  background:linear-gradient(125deg,rgba(255,255,255,.14),transparent 38%);
+}
+.photo img{display:block;width:100%;aspect-ratio:var(--ar);filter:saturate(.95) contrast(.97)}
+.photo .rot{position:relative;width:100%;aspect-ratio:var(--ar);overflow:hidden}
+.photo .rot img{ /* foto tirada deitada: gira na tela, o arquivo original fica intacto */
+  position:absolute;left:50%;top:50%;max-width:none;
+  width:calc(var(--w)/var(--ar));height:var(--w);aspect-ratio:auto;
+  transform:translate(-50%,-50%) rotate(-90deg);
+}
+.photo.wide{--wmax:calc(70cqw*var(--fit,1));--hmax:calc(34cqh*var(--fit,1));align-self:center}
+.photo.solo{--wmax:calc(60cqw*var(--fit,1));--hmax:calc(36cqh*var(--fit,1));align-self:center}
+#app.spread .photo{--hmax:calc(56cqh*var(--fit,1));--wmax:calc(44cqw*var(--fit,1))}
+#app.spread .photo.wide{--wmax:calc(68cqw*var(--fit,1));--hmax:calc(46cqh*var(--fit,1))}
+#app.spread .photo.solo{--hmax:calc(48cqh*var(--fit,1))}
+
+/* ───────── capa ───────── */
+.cover-front{
+  cursor:pointer;color:#fff3ec;
+  background:
+    linear-gradient(90deg,rgba(0,0,0,.3) 0,rgba(255,255,255,.14) 2.4%,rgba(0,0,0,.24) 4.8%,transparent 6.5%),
+    var(--noise),var(--cover);
+}
+.cover-front::before{content:"";position:absolute;inset:3.2cqmin 3.2cqmin 3.2cqmin calc(6.5% + 3.2cqmin);border:1.5px dashed rgba(255,235,240,.45);border-radius:6px;pointer-events:none}
+.cover-front .inner{align-items:center;text-align:center;padding:6cqh 8cqw 5cqh 12cqw;gap:.8em}
+.cover-front .photo{--hmax:calc(54cqh*var(--fit,1));--wmax:calc(60cqw*var(--fit,1))}
+#app.spread .cover-front .photo{--hmax:calc(56cqh*var(--fit,1))}
+.cover-front .photo::before{background:radial-gradient(circle at 32% 27%,#fff,#9fd6d2 42%,#1c6a70 88%)}
+h1{font:400 2.15em/1.15 var(--script);text-shadow:0 2px 3px rgba(70,10,35,.45);margin-top:.35em!important}
+#app.spread h1{font-size:2.6em}
+.dedic{font-style:italic;font-size:1.08em;opacity:.95}
+.hint{font:600 .68em system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;opacity:.75;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+
+/* Capa com a arte bordada aprovada (assets/capa-bordada.jpg).
+   A imagem já vem recortada só no tecido, com margem de tecido sobrando,
+   então "cover" preenche a capa em qualquer proporção sem cortar a Bell nem os textos. */
+.sheet.cover .face{box-shadow:0 4px 0 #560a1f}
+.cover-front.embroidered{background:#810f2a}
+/* A arte fica no botão (filho da página) para poder usar consulta de contêiner pela proporção da capa.
+   Capa estreita/normal: "cover" (a arte já tem tecido sobrando em volta).
+   Capa larga (janela baixa, ex.: navegador com barras): a arte encaixa pela altura e o tecido
+   (assets/capa-tecido.jpg, mesma escala e fase) completa as laterais — nada da Bell nem dos textos é cortado. */
+.cover-open{
+  --cu:calc(100cqh / 1820);
+  background:
+    linear-gradient(90deg,rgba(0,0,0,.34) 0,rgba(255,255,255,.12) 2.4%,rgba(0,0,0,.26) 4.8%,transparent 6.5%),
+    radial-gradient(ellipse 80% 70% at 55% 45%,transparent 55%,rgba(50,0,15,.32)),
+    url("assets/capa-bordada.jpg") center/cover no-repeat,
+    url("assets/capa-tecido.jpg") calc(50cqw - 670*var(--cu)) 0/calc(320*var(--cu)) calc(580*var(--cu)) repeat,
+    #810f2a;
+}
+@container (min-aspect-ratio:1/1){
+  .cover-open{background-size:auto,auto,auto 100%,calc(320*var(--cu)) calc(580*var(--cu)),auto}
+}
+.cover-front.embroidered::before{z-index:2}
+/* costura da borda, no mesmo fio creme do bordado */
+.cover-front.embroidered::before{
+  inset:2.6cqmin 2.6cqmin 2.6cqmin calc(6.5% + 2.6cqmin);
+  border:max(2px,.45cqmin) dashed rgba(244,220,182,.82);border-radius:8px;
+  filter:drop-shadow(0 1px 0 rgba(60,0,18,.55));
+}
+.cover-open{
+  position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;
+  color:#fff3ec;cursor:pointer;border-radius:inherit;
+  -webkit-tap-highlight-color:transparent;
+}
+.cover-open:focus{outline:none}
+.cover-open:focus-visible{outline:3px solid #ffe1a9;outline-offset:-7px}
+.cover-open .hint{
+  position:absolute;left:0;right:0;bottom:max(14px,3.4cqh);padding-left:6.5%;
+  font-size:max(10px,min(2.6cqw,1.7cqh));color:#f4dcb6;text-shadow:0 1px 2px rgba(60,0,18,.6);
+}
+.sr-only{
+  position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+.endpaper{
+  background:
+    radial-gradient(circle,rgba(154,44,87,.2) 1.4px,transparent 1.8px) 0 0/22px 22px,
+    radial-gradient(circle,rgba(154,44,87,.2) 1.4px,transparent 1.8px) 11px 11px/22px 22px,
+    var(--noise),#f8e3e6;
+  border:10px solid transparent;border-image:var(--cover) 10;
+}
+.endpaper .inner{align-items:center;padding:0}
+.exlibris{font:1.5em var(--script);color:rgba(154,44,87,.55);transform:rotate(-4deg)}
+
+/* ───────── páginas especiais ───────── */
+.breathe{justify-content:space-between;padding-top:9cqh;padding-bottom:9cqh}
+.breathe .verses{font-size:1.08em}
+.breathe .last{font-size:1.16em}
+.birthday .verses{font-size:1.12em;line-height:1.55}
+.birthday .v+.v{margin-top:.4em}
+.closing .inner{align-items:center;gap:1.6em}
+
+.signature{font:1.45em var(--script);color:var(--berry)}
+.doodle{width:3.2em;height:auto;overflow:visible}
+.doodle.ring{transform:rotate(-14deg);margin-left:1em}
+.doodle.fire{width:2.5em}
+.doodle.heart{width:2.3em;align-self:flex-start;margin-left:1em;transform:rotate(-8deg)}
+.doodle.heart.big{width:6em;margin:0;opacity:.55;align-self:center}
+
+/* ───────── áudio e vídeo ───────── */
+.media.audio{align-self:stretch}
+.play{
+  position:relative;overflow:hidden;display:flex;align-items:center;gap:.75em;
+  width:100%;max-width:23em;min-height:3.2em;padding:.7em 1.15em .8em .8em;
+  border:0;border-radius:1.7em;cursor:pointer;text-align:left;
+  background:linear-gradient(110deg,#d64672,#a12a56);color:#fff8fa;
+  font:600 .84em/1.3 system-ui,-apple-system,"Segoe UI",sans-serif;
+  box-shadow:0 2px 0 #7c2044,0 .5em .9em -.3em rgba(80,20,45,.6);
+  transform:rotate(-1deg);
+}
+.play:active{transform:rotate(-1deg) translateY(1px)}
+.ico{flex:none;width:2.1em;height:2.1em;border-radius:50%;background:#fff8fa;position:relative}
+.ico::before{content:"";position:absolute;inset:0;margin:auto;width:.8em;height:.9em;background:#a12a56;clip-path:polygon(12% 0,100% 50%,12% 100%);transform:translateX(.06em)}
+.playing .ico::before{clip-path:polygon(0 0,36% 0,36% 100%,0 100%,0 0,64% 0,100% 0,100% 100%,64% 100%,64% 0);transform:none;width:.7em}
+.bar{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.18)}
+.bar i{display:block;height:100%;width:0;background:#ffd9c4}
+
+.videopage .inner{padding-top:6cqh;padding-bottom:6cqh;align-items:center}
+.media.video{flex:1;min-height:0;align-self:stretch;display:grid;place-items:center;container-type:size}
+.frame{
+  --var:.5625;position:relative;overflow:hidden;
+  width:min(100cqw,calc(100cqh*var(--var)));aspect-ratio:var(--var);
+  background:#0e3540;border-radius:.5em;
+  box-shadow:0 0 0 .34em #fffdf7,0 .5em 1em rgba(50,28,34,.45);
+}
+.frame video{display:block;width:100%;height:100%;object-fit:contain;background:#0e3540}
+.start{
+  position:absolute;inset:0;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1em;
+  background:var(--noise),var(--cover);color:#fff8fa;font:1.25em var(--script);padding:1em;
+}
+.start .ico{width:3.2em;height:3.2em;font-family:system-ui}
+
+
+/* ───────── navegação ───────── */
+nav{
+  width:min(var(--sw),94vw);height:62px;margin-top:14px;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;
+}
+nav button{
+  justify-self:start;min-height:46px;padding:0 20px;border-radius:23px;cursor:pointer;
+  border:1.5px solid rgba(255,240,244,.5);background:rgba(255,248,250,.1);color:#fff8fa;
+  font:600 15px system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+nav button:hover{background:rgba(255,248,250,.2)}
+nav button:focus-visible{outline:2px solid #ffcad8;outline-offset:2px}
+nav button:disabled{visibility:hidden}
+#next{justify-self:end;background:#fff8fa;color:#942650;border-color:#fff8fa}
+#next:hover{background:#fff}
+#where{color:rgba(255,248,250,.8);font:italic 14px var(--serif);text-align:center}
+
+@media (prefers-reduced-motion:reduce){
+  .sheet,.stage{transition:none!important}
+  .sheet.moving .face::after,.stage.turning .cast,.hint{animation:none!important}
+}
+
+/* ───────── variações de foto por página ───────── */
+.inner>.photo,.inner>.pair,.inner>.collage{align-self:center}
+.photo.mid{--hmax:calc(36cqh*var(--fit,1));--wmax:calc(56cqw*var(--fit,1))}
+.photo.small{--hmax:calc(27cqh*var(--fit,1));--wmax:calc(50cqw*var(--fit,1))}
+#app.spread .photo.mid{--hmax:calc(50cqh*var(--fit,1));--wmax:calc(46cqw*var(--fit,1))}
+#app.spread .photo.small{--hmax:calc(38cqh*var(--fit,1));--wmax:calc(40cqw*var(--fit,1))}
+.verses.big{font-size:1.08em}
+.titled .note{margin-top:.3em!important}
+.col{display:flex;flex-direction:column;gap:1.3em;min-width:0}
+.col>*{margin:0}
+.beside{gap:1.3em}
+.beside>.photo{align-self:center}
+#app.spread .beside{flex-direction:row;align-items:center;justify-content:flex-start;gap:1.8em}
+#app.spread .beside>.col{flex:1 1 0}
+#app.spread .beside>.photo{--hmax:calc(54cqh*var(--fit,1));--wmax:calc(30cqw*var(--fit,1))}
+.pair{display:flex;align-items:center;justify-content:center;gap:1.3em}
+.pair .photo{--hmax:calc(27cqh*var(--fit,1));--wmax:calc(36cqw*var(--fit,1))}
+#app.spread .pair .photo{--hmax:calc(44cqh*var(--fit,1));--wmax:calc(34cqw*var(--fit,1))}
+.collage{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1em 1.1em;max-width:100%}
+.collage .photo{--hmax:calc(29cqh*var(--fit,1));--wmax:calc(28cqw*var(--fit,1))}
+#app.spread .collage{max-width:66cqw}
+#app.spread .collage .photo{--hmax:calc(31cqh*var(--fit,1));--wmax:calc(27cqw*var(--fit,1))}
+.closing .inner{gap:1em}
+.videopage .photo{--hmax:calc(62cqh*var(--fit,1))!important;--wmax:calc(64cqw*var(--fit,1))!important}
+.videopage .media.video:not([hidden])~.photo{--hmax:calc(19cqh*var(--fit,1))!important}
+
+/* ───────── player da música (rodapé) ───────── */
+.mid{display:flex;justify-content:center;min-width:0}
+#app.has-music #where{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#player{
+  position:relative;overflow:hidden;display:flex;align-items:center;gap:10px;
+  width:min(40vw,340px);height:46px;padding:0 12px 3px 6px;border-radius:12px;
+  background:#0b2a33;color:#fff8fa;box-shadow:0 6px 14px -6px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.08);
+  font:13px system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+#pp{flex:none;min-height:0;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:none;font-size:15px;display:grid;place-items:center}
+#pp:hover{background:none}
+#pp .ico{display:block}
+#player .ico::before{background:#0b2a33}
+#player.playing .ico::before{clip-path:polygon(0 0,36% 0,36% 100%,0 100%,0 0,64% 0,100% 0,100% 100%,64% 100%,64% 0);transform:none;width:.7em}
+.meta{min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.meta b,.meta small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta b{font-weight:600}
+.meta small{opacity:.65;font-size:11px}
+.meta small:empty{display:none}
+#player .bar{height:3px;background:rgba(255,255,255,.14)}
+#player .bar i{background:#e85a8a}
+@media (max-width:480px){nav button{padding:0 14px}}
+
+/* painel com o player oficial do SoundCloud (aparece só quando precisa) */
+#scpanel{
+  position:fixed;z-index:200;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));
+  width:min(94vw,440px);transform:translate(-50%,12px);
+  padding:8px;border-radius:14px;background:#0b2a33;box-shadow:0 14px 30px -8px rgba(0,0,0,.7);
+  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
+}
+#scpanel.open{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+#scpanel p{margin:0 0 6px;padding:2px 4px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff8fa;font:600 13px system-ui,-apple-system,"Segoe UI",sans-serif}
+#scpanel button{border:0;background:none;color:#fff8fa;font-size:16px;min-width:36px;min-height:36px;cursor:pointer}
+#scpanel iframe{display:block;width:100%;border:0;border-radius:8px;background:#f2f2f2}
+.meta.tap{cursor:pointer}
+@media (prefers-reduced-motion:reduce){#scpanel{transition:none}}
+
+/* margens do papel bordado também nas páginas com espaçamento próprio */
+.paper>.inner.breathe{padding-top:max(9cqh,calc(64*var(--u)));padding-bottom:max(9cqh,calc(178*var(--u)))}
+.videopage.paper>.inner{padding-top:calc(64*var(--u));padding-bottom:calc(178*var(--u))}
+
+/* ── texto sobre as linhas do papel ──
+   Cada linha de poema ocupa exatamente uma pauta (--P). O script encaixa a primeira linha
+   de cada bloco na pauta mais próxima (translate), sem mexer no resto do layout. */
+.paper .verses,.paper .birthday .verses{line-height:var(--P,1.5)}
+.paper .v+.v,.paper.birthday .v+.v{margin-top:0}
+.paper>.inner.airy{gap:max(1.7em,var(--P,0px))}
+.paper .col{gap:max(1.3em,var(--P,0px))}
+.bl{display:inline-block;width:0;height:0;vertical-align:baseline}
+/* foto inclinada: a quina girada não pode passar da margem (≈ metade do quanto ela gira para fora) */
+.paper .photo{margin-inline:calc(var(--w)*.08)}
+
+/* papel montado pelo script no tamanho exato da página (igual em Chrome, Firefox e Safari/iPhone);
+   o border-image acima só aparece até a imagem ficar pronta */
+#app.papel-pronto .front>.paper::before{border-image:none;background:var(--papel-dir) 0 0/100% 100% no-repeat}
+#app.papel-pronto .back>.paper::before{border-image:none;background:var(--papel-esq) 0 0/100% 100% no-repeat}
